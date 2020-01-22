@@ -22,6 +22,7 @@ type
     procedure InitializeParams;
     function GetHeaders(AIndex: string): string;
     function GetCookieFields: TStrings;
+    function GetMethodType: TMethodType;
   public
     function Body: string; overload;
     function Body<T: class>: T; overload;
@@ -30,6 +31,8 @@ type
     function Params: THorseList;
     property Headers[index: string]: string read GetHeaders;
     property CookieFields: TStrings read GetCookieFields;
+    property MethodType: TMethodType read GetMethodType;
+
     constructor Create(AWebRequest: TWebRequest);
     destructor Destroy; override;
   end;
@@ -102,6 +105,11 @@ end;
 function THorseRequest.GetHeaders(AIndex: string): string;
 begin
   Result := FWebRequest.GetFieldByName(AIndex);
+end;
+
+function THorseRequest.GetMethodType: TMethodType;
+begin
+  Result:=FWebRequest.MethodType;
 end;
 
 procedure THorseRequest.InitializeParams;
