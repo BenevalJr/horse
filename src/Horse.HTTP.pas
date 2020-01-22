@@ -21,6 +21,7 @@ type
     procedure InitializeQuery;
     procedure InitializeParams;
     function GetHeaders(AIndex: string): string;
+    function GetCookieFields: TStrings;
   public
     function Body: string; overload;
     function Body<T: class>: T; overload;
@@ -28,6 +29,7 @@ type
     function Query: THorseList;
     function Params: THorseList;
     property Headers[index: string]: string read GetHeaders;
+    property CookieFields: TStrings read GetCookieFields;
     constructor Create(AWebRequest: TWebRequest);
     destructor Destroy; override;
   end;
@@ -44,12 +46,16 @@ type
   private
     FWebResponse: TWebResponse;
     FContent: TObject;
+    function GetCookies: TCookieCollection;
   public
     function Send(AContent: string): THorseResponse; overload;
     function Send<T: class>(AContent: T): THorseResponse; overload;
     function Status(AStatus: Integer): THorseResponse; overload;
     function Status(AStatus: THTTPStatus): THorseResponse; overload;
     function Status: Integer; overload;
+    procedure SetCookieField(Values: TStrings; const ADomain, APath: string;
+      AExpires: TDateTime; ASecure: Boolean; AHttpOnly: Boolean = False);
+    property Cookies: TCookieCollection read GetCookies;
     constructor Create(AWebResponse: TWebResponse);
     destructor Destroy; override;
   end;
@@ -86,6 +92,11 @@ begin
   if Assigned(FBody) then
     FBody.Free;
   inherited;
+end;
+
+function THorseRequest.GetCookieFields: TStrings;
+begin
+  Result := FWebRequest.CookieFields;
 end;
 
 function THorseRequest.GetHeaders(AIndex: string): string;
@@ -143,6 +154,11 @@ begin
   inherited;
 end;
 
+function THorseResponse.GetCookies: TCookieCollection;
+begin
+  Result:=FWebResponse.Cookies;
+end;
+
 function THorseResponse.Send(AContent: string): THorseResponse;
 begin
   FWebResponse.StatusCode := THTTPStatus.OK.ToInteger;
@@ -155,6 +171,12 @@ begin
   FWebResponse.StatusCode := THTTPStatus.OK.ToInteger;
   FContent := AContent;
   Result := Self;
+end;
+
+procedure THorseResponse.SetCookieField(Values: TStrings; const ADomain,
+  APath: string; AExpires: TDateTime; ASecure, AHttpOnly: Boolean);
+begin
+  FWebResponse.SetCookieField(Values,ADomain,APath,AExpires,ASecure,AHttpOnly);
 end;
 
 function THorseResponse.Status(AStatus: THTTPStatus): THorseResponse;
